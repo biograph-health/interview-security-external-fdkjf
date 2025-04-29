@@ -47,7 +47,6 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        # Vulnerable to SQL injection
         conn = sqlite3.connect("app.db")
         cursor = conn.cursor()
         query = f"SELECT * FROM user WHERE username = '{username}' AND password = '{password}'"
@@ -55,7 +54,7 @@ def login():
         user = cursor.fetchone()
         conn.close()
         if user:
-            session["user_id"] = user[0]  # assuming id is the first column
+            session["user_id"] = user[0]
             return redirect(url_for("comments"))
         else:
             return "Invalid credentials"
@@ -79,7 +78,6 @@ def comments():
 def health(user_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
-    # Vulnerable to IDOR: No check if session['user_id'] == user_id
     health_data = HealthData.query.filter_by(user_id=user_id).first()
     if health_data:
         return render_template("health.html", health_data=health_data)
